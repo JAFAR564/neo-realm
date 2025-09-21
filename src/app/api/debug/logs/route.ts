@@ -1,65 +1,87 @@
 // src/app/api/debug/logs/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { withLogging } from '@/lib/api/loggingWrapper';
+import { logStorage } from '@/lib/logStorage';
+import { createLogger } from '@/lib/logger';
 
-// In a real implementation, you would store logs in a database or file
-// For now, we'll use an in-memory array (this will reset on server restart)
-let logs: any[] = [];
-
-// Middleware to capture logs (in a real implementation, you'd use the logger)
-const captureLog = (level: string, message: string, context?: any) => {
-  logs.unshift({
-    timestamp: new Date().toISOString(),
-    level,
-    message,
-    context,
-  });
-  
-  // Keep only the last 100 logs
-  if (logs.length > 100) {
-    logs = logs.slice(0, 100);
-  }
-};
-
-// Mock the logger to capture logs
-const mockLogger = {
-  info: (message: string, context?: any) => captureLog('info', message, context),
-  warn: (message: string, context?: any) => captureLog('warn', message, context),
-  error: (message: string, context?: any) => captureLog('error', message, context),
-};
+const logger = createLogger('api:debug-logs');
 
 // GET /api/debug/logs - Retrieve recent logs
 async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const limit = parseInt(searchParams.get('limit') || '50');
-  const level = searchParams.get('level');
-  
-  mockLogger.info('Fetching debug logs', { limit, level });
-  
-  let filteredLogs = logs;
-  
-  if (level) {
-    filteredLogs = logs.filter(log => log.level === level);
+  try {
+    const { searchParams } = new URL(request.url);
+    const limit = parseInt(searchParams.get('limit') || '50');
+    const level = searchParams.get('level') || undefined;
+    const context = searchParams.get('context') || undefined;
+    
+    logger.info({ 
+      action: 'fetch-logs',
+      limit,
+      level,
+      context
+    }, 'Fetching debug logs');
+    
+    const logs = logStorage.getLogs(limit, level || undefined, context || undefined);
+    
+    logger.info({ 
+      action: 'logs-fetched',
+      count: logs.length
+    }, `Successfully fetched ${logs.length} logs`);
+    
+    return NextResponse.json({
+      logs,
+      total: logs.length,
+    });
+  } catch (error: any) {
+    logger.error({ 
+      action: 'fetch-logs-error',
+      error: error.message
+    }, 'Error fetching debug logs');
+    
+    return NextResponse.json(
+      { error: 'Failed to fetch logs' },
+      { status: 500 }
+    );
   }
-  
-  return NextResponse.json({
-    logs: filteredLogs.slice(0, limit),
-    total: filteredLogs.length,
-  });
 }
 
 // POST /api/debug/logs - Add a log entry (for testing)
 async function POST(request: NextRequest) {
-  const body = await request.json();
-  const { level, message, context } = body;
-  
-  if (!message) {
-    return NextResponse.json({ error: 'Message is required' }, { status: 400 });
+  try {
+    const body = await request.json();
+    const { level, message, context } = body;
+    
+    if (!message) {
+      logger.warn({ action: 'missing-message' }, 'Message is required');
+      return NextResponse.json({ error: 'Message is required' }, { status: 400 });
+    }
+    
+    // Add the log to our storage
+    logStorage.addLog({
+      timestamp: new Date().toISOString(),
+      level: level || 'info',
+      message,
+      ...context
+    });
+    
+    logger.info({ 
+      action: 'log-added',
+      level,
+      message
+    }, 'Log entry added via API');
+    
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    logger.error({ 
+      action: 'add-log-error',
+      error: error.message
+    }, 'Error adding log entry');
+    
+    return NextResponse.json(
+      { error: 'Failed to add log entry' },
+      { status: 500 }
+    );
   }
-  
-  captureLog(level || 'info', message, context);
-  
-  return NextResponse.json({ success: true });
 }
 
 // Export the wrapped handlers

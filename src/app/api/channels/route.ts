@@ -20,6 +20,9 @@ async function GET(request: NextRequest) {
   try {
     logger.info({ userId: session.user.id, type: 'fetch-channels' }, 'Fetching channels for user');
     
+    // Add a test log to verify our logging system
+    logger.debug({ test: 'logging-system', userId: session.user.id }, 'Testing debug log from channels API');
+    
     // Get public channels and channels the user is a member of
     const { data: channels, error } = await supabase
       .from('channels')
