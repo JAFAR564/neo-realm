@@ -15,6 +15,23 @@ NeoRealm is a gamified cyberpunk roleplay social platform built with Next.js and
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
+- [Development Setup](#development-setup)
+- [Database Schema](#database-schema)
+- [Supabase Functions](#supabase-functions)
+- [Project Structure](#project-structure)
+- [Deployment](#deployment)
+- [Project Roadmap](#project-roadmap)
+- [Contributing](#contributing)
+- [License](#license)
+
+## Table of Contents
+
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Architecture](#architecture)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
   - [Environment Variables](#environment-variables)
 - [Database Schema](#database-schema)
 - [Supabase Functions](#supabase-functions)
@@ -66,42 +83,31 @@ NeoRealm follows a modern web application architecture:
 └──────────────────┘    └──────────────────┘
 ```
 
-## Development Setup
+### Development Setup
 
-### Prerequisites
+#### Single Process Development
 
-- Node.js 18+
-- npm, yarn, or pnpm
-- Supabase account (free tier available)
-- GitHub account (for deployment)
+For standard development, run:
 
-### Installation
+```bash
+npm run dev
+```
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/YOUR_USERNAME/neo-realm.git
-   cd neo-realm
-   ```
+This starts the Next.js development server on [http://localhost:3000](http://localhost:3000).
 
-2. Install dependencies:
-   ```bash
-   npm install
-   # or
-   yarn install
-   # or
-   pnpm install
-   ```
+#### Multi-Process Development
 
-3. Start the development server:
-   ```bash
-   npm run dev
-   # or
-   yarn dev
-   # or
-   pnpm dev
-   ```
+To run the development server alongside log watching and other services:
 
-4. Open [http://localhost:3000](http://localhost:3000) in your browser
+```bash
+npm run dev:all
+```
+
+This uses `npm-run-all` to run multiple processes in parallel:
+- Next.js development server
+- Log watcher that monitors application logs in real-time
+
+See [Multi-Process Development Guide](docs/MULTI_PROCESS_DEVELOPMENT.md) for more details.
 
 ### Environment Variables
 
