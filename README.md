@@ -4,6 +4,9 @@
 
 NeoRealm is a gamified cyberpunk roleplay social platform built with Next.js and Supabase. Users can create characters, interact in a terminal-style chat interface, and engage with a cyberpunk-themed social network.
 
+**Phase 1 (MVP) Complete!** 🎉 - All core functionality has been implemented and deployed.
+**Phase 2: Community Growth** - Currently planning enhanced features including multi-channel support, premium features, and community tools.
+
 ## Table of Contents
 
 - [Features](#features)
@@ -204,6 +207,38 @@ src/
 2. Run the database schema from `src/database/schema.sql`
 3. Set up authentication
 4. Deploy the Edge Functions (see above)
+
+## Project Roadmap
+
+### Phase 1: MVP (Complete ✅)
+- User authentication system
+- Character profile creation
+- Main terminal chat with basic styling
+- Basic dice roll and action command functionality
+- Follow system for characters
+- Simple "Architect" bot with pre-written messages
+- Basic energy reaction system
+
+### Phase 2: Community Growth (In Planning 🚧)
+- Multiple channels/rooms for different storylines
+- Enhanced UI with full cyberpunk theming
+- Sound effects and animations
+- Basic premium features (additional character slots, custom themes, ad-free experience)
+- "Find a Group" system for matching players with Game Masters
+- Threaded conversations for complex storylines
+
+### Phase 3: AI Evolution (Future 🔮)
+- Gemini API integration for "Architect" bot
+- Dynamic narrative generation based on player actions
+- Advanced moderation bots
+- Community world-building features
+- Marketplace for digital assets
+- Quest generation system
+
+Detailed planning documents for Phase 2 can be found in the [docs](docs/) directory:
+- [Phase 2 Implementation Plan](docs/PHASE_2_PLAN.md)
+- [Channels Technical Specification](docs/CHANNELS_TECHNICAL_SPEC.md)
+- [Phase 2 Project Management](docs/PHASE_2_PROJECT_MANAGEMENT.md)
 5. Configure environment variables
 
 ## Contributing
