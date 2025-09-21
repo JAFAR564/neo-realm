@@ -1,0 +1,19 @@
+{
+  "functions": {
+    "architect-bot": {
+      "name": "architect-bot",
+      "entrypoint": "index.ts",
+      "methods": ["GET"]
+    },
+    "welcome-user": {
+      "name": "welcome-user",
+      "entrypoint": "index.ts",
+      "methods": ["POST"]
+    },
+    "test-function": {
+      "name": "test-function",
+      "entrypoint": "index.ts",
+      "methods": ["GET"]
+    }
+  }
+}
