@@ -66,7 +66,7 @@ NeoRealm follows a modern web application architecture:
 └──────────────────┘    └──────────────────┘
 ```
 
-## Getting Started
+## Development Setup
 
 ### Prerequisites
 
@@ -111,6 +111,25 @@ Create a `.env.local` file in the root directory with your Supabase credentials:
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
+
+For debugging, you can also set:
+
+```env
+LOG_LEVEL=debug
+```
+
+### Debugging
+
+The application includes a comprehensive logging system and debugging tools:
+
+- **Structured Logging**: All logs are output in structured format for easy parsing
+- **Debug Log Viewer**: In development mode, a real-time log viewer is available in the browser
+- **API Route Logging**: All API requests and responses are automatically logged
+- **Error Tracking**: Full stack traces and context information for all errors
+
+For detailed information about the logging system and debugging tools, see:
+- [Logging System Documentation](docs/LOGGING_SYSTEM.md)
+- [Debugging Guide](docs/DEBUGGING_GUIDE.md)
 
 ## Database Schema
 

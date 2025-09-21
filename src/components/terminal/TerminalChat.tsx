@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
-import { supabase } from '../../lib/supabaseClient';
+import { supabase } from '@/lib/supabaseClient';
 import EnergyReaction from './EnergyReaction';
 
 type Message = {
@@ -31,7 +31,15 @@ type UserProfile = {
   character_class: string | null;
 };
 
-export default function TerminalChat({ profile }: { profile: any }) {
+export default function TerminalChat({ 
+  profile,
+  channelId,
+  channelName
+}: { 
+  profile: { id: string };
+  channelId?: string;
+  channelName?: string;
+}) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [loading, setLoading] = useState(true);
@@ -42,41 +50,21 @@ export default function TerminalChat({ profile }: { profile: any }) {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  // Load messages from database
+  // Load messages from database for the specific channel
   useEffect(() => {
+    if (!channelId) return;
+
     const loadMessages = async () => {
       try {
-        // Get messages with user profiles
-        const { data: messagesData, error: messagesError } = await supabase
-          .from('messages')
-          .select(`
-            id,
-            user_id,
-            content,
-            message_type,
-            created_at,
-            profiles:profiles(id, username, avatar_url, character_class),
-            reactions(*)
-          `)
-          .order('created_at', { ascending: true })
-          .limit(50);
-
-        if (messagesError) throw messagesError;
-
-        // Format messages with user data
-        const formattedMessages = messagesData.map(msg => ({
-          id: msg.id,
-          user_id: msg.user_id,
-          content: msg.content,
-          message_type: msg.message_type,
-          created_at: msg.created_at,
-          username: (msg.profiles as UserProfile)?.username || 'Unknown',
-          avatar_url: (msg.profiles as UserProfile)?.avatar_url || null,
-          character_class: (msg.profiles as UserProfile)?.character_class || null,
-          reactions: msg.reactions || []
-        }));
-
-        setMessages(formattedMessages);
+        setLoading(true);
+        const response = await fetch(`/api/messages?channelId=${channelId}`);
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch messages');
+        }
+        
+        const data = await response.json();
+        setMessages(data.messages);
         setLoading(false);
       } catch (error) {
         console.error('Error loading messages:', error);
@@ -86,15 +74,16 @@ export default function TerminalChat({ profile }: { profile: any }) {
 
     loadMessages();
 
-    // Subscribe to new messages
+    // Subscribe to new messages for this channel
     const channel = supabase
-      .channel('messages')
+      .channel(`messages:${channelId}`)
       .on(
         'postgres_changes',
         {
           event: 'INSERT',
           schema: 'public',
-          table: 'messages'
+          table: 'messages',
+          filter: `channel_id=eq.${channelId}`
         },
         (payload) => {
           // Get user profile for the new message
@@ -125,7 +114,7 @@ export default function TerminalChat({ profile }: { profile: any }) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [channelId]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -134,7 +123,7 @@ export default function TerminalChat({ profile }: { profile: any }) {
 
   // Handle sending a message
   const sendMessage = async () => {
-    if (!inputValue.trim()) return;
+    if (!inputValue.trim() || !channelId) return;
 
     try {
       // Parse command if it starts with /
@@ -144,58 +133,78 @@ export default function TerminalChat({ profile }: { profile: any }) {
         switch (command.toLowerCase()) {
           case 'me':
             // Action command
-            await supabase.from('messages').insert([
-              {
-                user_id: profile.id,
+            await fetch('/api/messages', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                channelId,
                 content: args.join(' '),
-                message_type: 'action'
-              }
-            ]);
+                messageType: 'action'
+              }),
+            });
             break;
             
           case 'roll':
             // Dice roll command
             const diceNotation = args[0] || '1d20';
             const rollResult = rollDice(diceNotation);
-            await supabase.from('messages').insert([
-              {
-                user_id: profile.id,
+            await fetch('/api/messages', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                channelId,
                 content: `${diceNotation} = ${rollResult}`,
-                message_type: 'dice_roll'
-              }
-            ]);
+                messageType: 'dice_roll'
+              }),
+            });
             break;
             
           case 'help':
             // Help command
-            await supabase.from('messages').insert([
-              {
-                user_id: profile.id,
+            await fetch('/api/messages', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                channelId,
                 content: 'Available commands: /me [action], /roll [XdY], /help',
-                message_type: 'system'
-              }
-            ]);
+                messageType: 'system'
+              }),
+            });
             break;
             
           default:
             // Unknown command
-            await supabase.from('messages').insert([
-              {
-                user_id: profile.id,
+            await fetch('/api/messages', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                channelId,
                 content: `Unknown command: /${command}. Type /help for available commands.`,
-                message_type: 'system'
-              }
-            ]);
+                messageType: 'system'
+              }),
+            });
         }
       } else {
         // Regular chat message
-        await supabase.from('messages').insert([
-          {
-            user_id: profile.id,
+        await fetch('/api/messages', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            channelId,
             content: inputValue,
-            message_type: 'chat'
-          }
-        ]);
+            messageType: 'chat'
+          }),
+        });
       }
       
       setInputValue('');
@@ -262,6 +271,29 @@ export default function TerminalChat({ profile }: { profile: any }) {
       : message.username;
   };
 
+  if (!channelId) {
+    return (
+      <div className="bg-gray-800 rounded-lg shadow-lg overflow-hidden h-full flex flex-col">
+        <div className="bg-gray-700 px-4 py-2 flex items-center">
+          <div className="flex space-x-2">
+            <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+            <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+          </div>
+          <div className="ml-4 text-sm font-mono">
+            NeoRealm Terminal v0.1.0
+          </div>
+        </div>
+        
+        <div className="p-4 font-mono text-sm flex-1 flex items-center justify-center">
+          <div className="text-gray-500 text-center">
+            Select a channel to start chatting
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-gray-800 rounded-lg shadow-lg overflow-hidden h-full flex flex-col">
       <div className="bg-gray-700 px-4 py-2 flex items-center">
@@ -271,7 +303,7 @@ export default function TerminalChat({ profile }: { profile: any }) {
           <div className="w-3 h-3 bg-green-500 rounded-full"></div>
         </div>
         <div className="ml-4 text-sm font-mono">
-          NeoRealm Terminal v0.1.0
+          {channelName ? `#${channelName}` : 'NeoRealm Terminal v0.1.0'}
         </div>
       </div>
       

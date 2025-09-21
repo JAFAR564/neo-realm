@@ -1,16 +1,19 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
-import { supabase } from '../lib/supabaseClient';
-import TerminalChat from '../components/terminal/TerminalChat';
+import { supabase } from '@/lib/supabaseClient';
+import TerminalChat from '@/components/terminal/TerminalChat';
+import ChannelSidebar from '@/components/channels/ChannelSidebar';
+import DebugLogViewer from '@/components/DebugLogViewer';
 
 export default function Home() {
   const { user } = useAuth();
   const router = useRouter();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [currentChannel, setCurrentChannel] = useState(null);
 
   // Check if user has a profile
   useEffect(() => {
@@ -32,7 +35,6 @@ export default function Home() {
             }
           } else {
             setProfile(data);
-            // For now, we'll stay on this page which will become the terminal
           }
         } catch (err) {
           console.error('Error:', err);
@@ -47,6 +49,32 @@ export default function Home() {
     }
   }, [user, router]);
 
+  // Load the default "General" channel when profile is loaded
+  useEffect(() => {
+    if (profile) {
+      const fetchDefaultChannel = async () => {
+        try {
+          const response = await fetch('/api/channels');
+          
+          if (!response.ok) {
+            throw new Error('Failed to fetch channels');
+          }
+          
+          const data = await response.json();
+          const generalChannel = data.channels.find((channel: any) => channel.name === 'General');
+          
+          if (generalChannel) {
+            setCurrentChannel(generalChannel);
+          }
+        } catch (err) {
+          console.error('Error fetching default channel:', err);
+        }
+      };
+
+      fetchDefaultChannel();
+    }
+  }, [profile]);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-900">
@@ -55,13 +83,33 @@ export default function Home() {
     );
   }
 
-  // If user has a profile, show the terminal interface
+  // If user has a profile, show the terminal interface with channels
   if (profile) {
     return (
-      <div className="min-h-screen bg-gray-900 text-white p-4">
-        <div className="max-w-4xl mx-auto h-[calc(100vh-2rem)]">
-          <TerminalChat profile={profile} />
+      <div className="min-h-screen bg-gray-900 text-white flex">
+        <ChannelSidebar 
+          currentChannel={currentChannel} 
+          onChannelSelect={setCurrentChannel} 
+        />
+        <div className="flex-1 p-4">
+          <div className="max-w-4xl mx-auto h-[calc(100vh-2rem)]">
+            {currentChannel ? (
+              <TerminalChat 
+                profile={profile} 
+                channelId={currentChannel.id}
+                channelName={currentChannel.name}
+              />
+            ) : (
+              <div className="flex items-center justify-center h-full bg-gray-800 rounded-lg">
+                <div className="text-center">
+                  <div className="text-gray-500 mb-4">Select a channel to start chatting</div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
+        {/* Show debug log viewer in development mode */}
+        {process.env.NODE_ENV === 'development' && <DebugLogViewer />}
       </div>
     );
   }
@@ -87,6 +135,8 @@ export default function Home() {
           </button>
         </div>
       </div>
+      {/* Show debug log viewer in development mode */}
+      {process.env.NODE_ENV === 'development' && <DebugLogViewer />}
     </div>
   );
 }

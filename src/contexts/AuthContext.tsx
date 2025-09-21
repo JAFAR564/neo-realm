@@ -8,8 +8,8 @@ import { useRouter } from 'next/navigation'
 type AuthContextType = {
   user: User | null
   session: Session | null
-  signIn: (email: string, password: string) => Promise<any>
-  signUp: (email: string, password: string) => Promise<any>
+  signIn: (email: string, password: string) => Promise<{ data: { session: Session | null; user: User | null }; error: Error | null } | { error: Error } | { data: { user: User | null; session: Session | null } }>
+  signUp: (email: string, password: string) => Promise<{ data: { session: Session | null; user: User | null }; error: Error | null } | { error: Error } | { data: { user: User | null; session: Session | null } }>
   signOut: () => Promise<void>
   loading: boolean
 }
