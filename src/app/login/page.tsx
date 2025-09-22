@@ -18,12 +18,12 @@ export default function LoginPage() {
 
     try {
       if (isSignUp) {
-        const { error } = await signUp(email, password)
-        if (error) throw error
+        const result = await signUp(email, password)
+        if ('error' in result && result.error) throw result.error
         alert('Check your email for the confirmation link!')
       } else {
-        const { error } = await signIn(email, password)
-        if (error) throw error
+        const result = await signIn(email, password)
+        if ('error' in result && result.error) throw result.error
         router.push('/')
       }
     } catch (error: any) {
