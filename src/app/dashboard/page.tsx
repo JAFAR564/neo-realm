@@ -21,10 +21,10 @@ type Follower = {
   created_at: string;
   follower_profile?: {
     username: string;
-  };
+  }[];
   following_profile?: {
     username: string;
-  };
+  }[];
 };
 
 export default function Dashboard() {
