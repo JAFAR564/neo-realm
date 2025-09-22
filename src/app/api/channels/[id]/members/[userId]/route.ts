@@ -1,9 +1,9 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from '@/lib/auth';
 import { createServerSupabaseClient } from '@/lib/serverSupabaseClient';
 
 // PUT /api/channels/[id]/members/[userId] - Update a member's role (admin/moderator only)
-export async function PUT(request: Request, { params }: { params: { id: string, userId: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: { id: string, userId: string } }) {
   const session = await getServerSession();
   
   if (!session) {
@@ -80,7 +80,7 @@ export async function PUT(request: Request, { params }: { params: { id: string, 
 }
 
 // DELETE /api/channels/[id]/members/[userId] - Remove a member from channel (admin/moderator only)
-export async function DELETE(request: Request, { params }: { params: { id: string, userId: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: { id: string, userId: string } }) {
   const session = await getServerSession();
   
   if (!session) {

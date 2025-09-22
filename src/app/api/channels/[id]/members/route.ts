@@ -1,9 +1,9 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from '@/lib/auth';
 import { createServerSupabaseClient } from '@/lib/serverSupabaseClient';
 
 // GET /api/channels/[id]/members - Retrieve members of a channel
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(_request: NextRequest, { params }: { params: { id: string } }) {
   const session = await getServerSession();
   
   if (!session) {
@@ -64,7 +64,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
 }
 
 // POST /api/channels/[id]/join - Join a public or unlisted channel
-export async function POST(request: Request, { params }: { params: { id: string } }) {
+export async function POST(_request: NextRequest, { params }: { params: { id: string } }) {
   const session = await getServerSession();
   
   if (!session) {
@@ -131,7 +131,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
 }
 
 // DELETE /api/channels/[id]/leave - Leave a channel
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(_request: NextRequest, { params }: { params: { id: string } }) {
   const session = await getServerSession();
   
   if (!session) {

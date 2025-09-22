@@ -1,9 +1,9 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from '@/lib/auth';
 import { createServerSupabaseClient } from '@/lib/serverSupabaseClient';
 
 // GET /api/channels/[id] - Retrieve details for a specific channel
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(_request: NextRequest, { params }: { params: { id: string } }) {
   const session = await getServerSession();
   
   if (!session) {
@@ -73,7 +73,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
 }
 
 // PUT /api/channels/[id] - Update a channel's details
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   const session = await getServerSession();
   
   if (!session) {
@@ -136,7 +136,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 }
 
 // DELETE /api/channels/[id] - Delete a channel
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(_request: NextRequest, { params }: { params: { id: string } }) {
   const session = await getServerSession();
   
   if (!session) {
