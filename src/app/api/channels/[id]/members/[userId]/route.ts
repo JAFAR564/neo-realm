@@ -3,7 +3,7 @@ import { getServerSession } from '@/lib/auth';
 import { createServerSupabaseClient } from '@/lib/serverSupabaseClient';
 
 // PUT /api/channels/[id]/members/[userId] - Update a member's role (admin/moderator only)
-export async function PUT(request: NextRequest, { params }: { params: { id: string, userId: string } }) {
+export async function PUT(request: NextRequest, context: { params: Promise<{ id: string, userId: string }> }) {
   const session = await getServerSession();
   
   if (!session) {
@@ -11,10 +11,11 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
   
   const supabase = createServerSupabaseClient();
+  const params = await context.params;
+  const channelId = params.id;
+  const targetUserId = params.userId;
   
   try {
-    const channelId = params.id;
-    const targetUserId = params.userId;
     const { role } = await request.json();
     
     // Validate role
@@ -80,7 +81,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 }
 
 // DELETE /api/channels/[id]/members/[userId] - Remove a member from channel (admin/moderator only)
-export async function DELETE(request: NextRequest, { params }: { params: { id: string, userId: string } }) {
+export async function DELETE(_request: NextRequest, context: { params: Promise<{ id: string, userId: string }> }) {
   const session = await getServerSession();
   
   if (!session) {
@@ -88,11 +89,11 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
   }
   
   const supabase = createServerSupabaseClient();
+  const params = await context.params;
+  const channelId = params.id;
+  const targetUserId = params.userId;
   
   try {
-    const channelId = params.id;
-    const targetUserId = params.userId;
-    
     // Check if current user is admin or moderator of this channel
     const { data: currentUserMembership, error: currentUserError } = await supabase
       .from('channel_memberships')

@@ -3,7 +3,7 @@ import { getServerSession } from '@/lib/auth';
 import { createServerSupabaseClient } from '@/lib/serverSupabaseClient';
 
 // GET /api/channels/[id] - Retrieve details for a specific channel
-export async function GET(_request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(_request: NextRequest, context: { params: Promise<{ id: string }> }) {
   const session = await getServerSession();
   
   if (!session) {
@@ -11,10 +11,10 @@ export async function GET(_request: NextRequest, { params }: { params: { id: str
   }
   
   const supabase = createServerSupabaseClient();
+  const params = await context.params;
+  const channelId = params.id;
   
   try {
-    const channelId = params.id;
-    
     // Get the channel
     const { data: channel, error: channelError } = await supabase
       .from('channels')
@@ -73,7 +73,7 @@ export async function GET(_request: NextRequest, { params }: { params: { id: str
 }
 
 // PUT /api/channels/[id] - Update a channel's details
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   const session = await getServerSession();
   
   if (!session) {
@@ -81,9 +81,10 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
   
   const supabase = createServerSupabaseClient();
+  const params = await context.params;
+  const channelId = params.id;
   
   try {
-    const channelId = params.id;
     const { name, description, privacy } = await request.json();
     
     // Check if user is admin of this channel
@@ -136,7 +137,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 }
 
 // DELETE /api/channels/[id] - Delete a channel
-export async function DELETE(_request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(_request: NextRequest, context: { params: Promise<{ id: string }> }) {
   const session = await getServerSession();
   
   if (!session) {
@@ -144,10 +145,10 @@ export async function DELETE(_request: NextRequest, { params }: { params: { id: 
   }
   
   const supabase = createServerSupabaseClient();
+  const params = await context.params;
+  const channelId = params.id;
   
   try {
-    const channelId = params.id;
-    
     // Check if user is admin of this channel
     const { data: membership, error: membershipError } = await supabase
       .from('channel_memberships')
