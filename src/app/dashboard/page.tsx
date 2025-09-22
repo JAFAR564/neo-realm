@@ -19,7 +19,10 @@ type Follower = {
   follower_id: string;
   following_id: string;
   created_at: string;
-  follower_profile: {
+  follower_profile?: {
+    username: string;
+  };
+  following_profile?: {
     username: string;
   };
 };
