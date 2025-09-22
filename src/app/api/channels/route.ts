@@ -10,7 +10,7 @@ const logger = createLogger('api:channels');
 async function GET(_request: NextRequest) {
   const session = await getServerSession();
   
-  if (!session) {
+  if (!session || !session.user) {
     logger.warn({ type: 'unauthorized' }, 'Unauthorized access attempt to channels API');
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
@@ -68,7 +68,7 @@ async function GET(_request: NextRequest) {
 async function POST(request: NextRequest) {
   const session = await getServerSession();
   
-  if (!session) {
+  if (!session || !session.user) {
     logger.warn({ type: 'unauthorized' }, 'Unauthorized access attempt to channels API');
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
