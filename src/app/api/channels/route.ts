@@ -169,7 +169,5 @@ async function POST(request: NextRequest) {
 }
 
 // Export the wrapped handlers
-export { 
-  withLogging(GET, 'channels') as GET,
-  withLogging(POST, 'channels') as POST
-};
+export const GET = withLogging(GET, 'channels');
+export const POST = withLogging(POST, 'channels');
