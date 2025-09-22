@@ -31,37 +31,46 @@ function fetchLogs() {
     
     res.on('end', () => {
       try {
-        const response = JSON.parse(data);
-        const logs = response.logs || [];
-        
-        // Only display logs if we have new ones
-        if (logs.length > lastLogCount) {
-          console.log('\n--- New Logs ---');
-          logs.slice(0, logs.length - lastLogCount).reverse().forEach(log => {
-            const timestamp = new Date(log.timestamp).toLocaleTimeString();
-            const level = log.level.toUpperCase().padEnd(7);
-            console.log(`[${timestamp}] ${level} ${log.message}`);
-            
-            // Display additional context if available
-            if (log.context) {
-              console.log(`           Context: ${log.context}`);
-            }
-            
-            // Display other properties
-            Object.keys(log).forEach(key => {
-              if (!['timestamp', 'level', 'message', 'context'].includes(key)) {
-                console.log(`           ${key}: ${JSON.stringify(log[key])}`);
-              }
-            });
-            
-            console.log('');
-          });
-          console.log('----------------\n');
+        // Check if the response is JSON
+        if (res.headers['content-type'] && res.headers['content-type'].includes('application/json')) {
+          const response = JSON.parse(data);
+          const logs = response.logs || [];
           
-          lastLogCount = logs.length;
+          // Only display logs if we have new ones
+          if (logs.length > lastLogCount) {
+            console.log('\n--- New Logs ---');
+            logs.slice(0, logs.length - lastLogCount).reverse().forEach(log => {
+              const timestamp = new Date(log.timestamp).toLocaleTimeString();
+              const level = log.level.toUpperCase().padEnd(7);
+              console.log(`[${timestamp}] ${level} ${log.message}`);
+              
+              // Display additional context if available
+              if (log.context) {
+                console.log(`           Context: ${log.context}`);
+              }
+              
+              // Display other properties
+              Object.keys(log).forEach(key => {
+                if (!['timestamp', 'level', 'message', 'context'].includes(key)) {
+                  console.log(`           ${key}: ${JSON.stringify(log[key])}`);
+                }
+              });
+              
+              console.log('');
+            });
+            console.log('----------------\n');
+            
+            lastLogCount = logs.length;
+          }
+        } else {
+          console.error('Received non-JSON response:');
+          console.error('Status:', res.statusCode);
+          console.error('Content-Type:', res.headers['content-type']);
+          console.error('Response body (first 500 chars):', data.substring(0, 500));
         }
       } catch (error) {
         console.error('Error parsing log data:', error.message);
+        console.error('Response data:', data.substring(0, 500));
       }
     });
   }).on('error', (error) => {

@@ -1,6 +1,7 @@
 // src/lib/logger.ts
 import pino from 'pino';
 import { logStorage } from './logStorage';
+import { persistentLogStorage } from './persistentLogStorage';
 
 // Create a logger instance with a custom transport
 const logger = pino({
@@ -31,12 +32,15 @@ const createProxyLogger = (baseLogger: pino.Logger) => {
           const message = args[args.length - 1];
           const context = args.length > 1 ? args[0] : {};
           
-          logStorage.addLog({
+          const logEntry = {
             timestamp: new Date().toISOString(),
             level,
             message: typeof message === 'string' ? message : JSON.stringify(message),
             ...context
-          });
+          };
+          
+          logStorage.addLog(logEntry);
+          persistentLogStorage.addLog(logEntry);
           
           // Call the original method
           return target[prop](...args);

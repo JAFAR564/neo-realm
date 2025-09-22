@@ -27,22 +27,6 @@ serve(async (req) => {
     const welcomeMessage = `A new signal detected. The Architect acknowledges you, ${record.username || 'traveler'}. Your story begins now.`;
     console.log('Generated welcome message:', welcomeMessage);
     
-    // Check if the messages table exists by querying it
-    const { data: tableCheck, error: tableError } = await supabase
-      .from('messages')
-      .select('id')
-      .limit(1);
-    
-    if (tableError) {
-      console.error('Error checking messages table:', tableError);
-      return new Response(JSON.stringify({ error: 'Database error: ' + tableError.message }), {
-        headers: { "Content-Type": "application/json" },
-        status: 500,
-      });
-    }
-    
-    console.log('Messages table exists and is accessible');
-    
     // Insert the welcome message into the database
     // Using a null user_id since we might not have a valid user yet
     const { data, error } = await supabase

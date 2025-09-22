@@ -43,11 +43,41 @@ export default function TerminalChat({
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [loading, setLoading] = useState(true);
+  const [userProfiles, setUserProfiles] = useState<Record<string, UserProfile>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Scroll to bottom of messages
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  // Load user profiles for messages
+  const loadUserProfiles = async (userIds: string[]) => {
+    // Filter out already loaded profiles
+    const userIdsToLoad = userIds.filter(id => !userProfiles[id] && id !== null);
+    
+    if (userIdsToLoad.length === 0) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, username, avatar_url, character_class')
+        .in('id', userIdsToLoad);
+
+      if (error) {
+        console.error('Error loading user profiles:', error);
+        return;
+      }
+
+      // Update user profiles state
+      const newUserProfiles = { ...userProfiles };
+      data.forEach(profile => {
+        newUserProfiles[profile.id] = profile;
+      });
+      setUserProfiles(newUserProfiles);
+    } catch (error) {
+      console.error('Error loading user profiles:', error);
+    }
   };
 
   // Load messages from database for the specific channel
@@ -65,6 +95,13 @@ export default function TerminalChat({
         
         const data = await response.json();
         setMessages(data.messages);
+        
+        // Load user profiles for all messages
+        const userIds = data.messages
+          .map((msg: Message) => msg.user_id)
+          .filter((id: string | null) => id !== null);
+        await loadUserProfiles(userIds);
+        
         setLoading(false);
       } catch (error) {
         console.error('Error loading messages:', error);
@@ -86,27 +123,35 @@ export default function TerminalChat({
           filter: `channel_id=eq.${channelId}`
         },
         (payload) => {
-          // Get user profile for the new message
-          supabase
-            .from('profiles')
-            .select('username, avatar_url, character_class')
-            .eq('id', payload.new.user_id)
-            .single()
-            .then(({ data: userData, error: userError }) => {
-              const newMessage = {
-                id: payload.new.id,
-                user_id: payload.new.user_id,
-                content: payload.new.content,
-                message_type: payload.new.message_type,
-                created_at: payload.new.created_at,
-                username: userError ? 'Unknown' : userData?.username || 'Unknown',
-                avatar_url: userError ? null : userData?.avatar_url || null,
-                character_class: userError ? null : userData?.character_class || null,
-                reactions: []
-              };
-              
-              setMessages(prev => [...prev, newMessage]);
-            });
+          // Get user profile for the new message from cache or fetch if needed
+          const userId = payload.new.user_id;
+          let userProfile = userProfiles[userId];
+          
+          if (userId && !userProfile) {
+            // Load the user profile if not in cache
+            loadUserProfiles([userId]);
+            // Use temporary display while loading
+            userProfile = {
+              id: userId,
+              username: 'Loading...',
+              avatar_url: null,
+              character_class: null
+            };
+          }
+          
+          const newMessage = {
+            id: payload.new.id,
+            user_id: payload.new.user_id,
+            content: payload.new.content,
+            message_type: payload.new.message_type,
+            created_at: payload.new.created_at,
+            username: userProfile ? userProfile.username : 'Unknown',
+            avatar_url: userProfile ? userProfile.avatar_url : null,
+            character_class: userProfile ? userProfile.character_class : null,
+            reactions: []
+          };
+          
+          setMessages(prev => [...prev, newMessage]);
         }
       )
       .subscribe();
@@ -114,7 +159,7 @@ export default function TerminalChat({
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [channelId]);
+  }, [channelId, userProfiles]);
 
   // Scroll to bottom when messages change
   useEffect(() => {

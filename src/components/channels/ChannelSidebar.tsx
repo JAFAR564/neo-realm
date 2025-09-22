@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import ChannelList from './ChannelList';
 import ChannelCreationModal from './ChannelCreationModal';
@@ -26,9 +26,10 @@ export default function ChannelSidebar({
   const [error, setError] = useState<string | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [realtimeChannel, setRealtimeChannel] = useState<any>(null);
+  const [debounceTimer, setDebounceTimer] = useState<NodeJS.Timeout | null>(null);
 
-  // Fetch channels
-  const fetchChannels = async () => {
+  // Fetch channels with debounce to prevent excessive API calls
+  const fetchChannels = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch('/api/channels');
@@ -46,13 +47,26 @@ export default function ChannelSidebar({
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  // Debounced version of fetchChannels
+  const debouncedFetchChannels = useCallback(() => {
+    if (debounceTimer) {
+      clearTimeout(debounceTimer);
+    }
+    
+    const timer = setTimeout(() => {
+      fetchChannels();
+    }, 300); // 300ms debounce
+    
+    setDebounceTimer(timer);
+  }, [fetchChannels, debounceTimer]);
 
   // Load channels on component mount
   useEffect(() => {
     fetchChannels();
     
-    // Set up real-time subscription for channels
+    // Set up real-time subscription for channels with debounce
     const channel = supabase
       .channel('channels')
       .on(
@@ -63,7 +77,7 @@ export default function ChannelSidebar({
           table: 'channels'
         },
         (payload) => {
-          fetchChannels();
+          debouncedFetchChannels();
         }
       )
       .on(
@@ -74,7 +88,7 @@ export default function ChannelSidebar({
           table: 'channels'
         },
         (payload) => {
-          fetchChannels();
+          debouncedFetchChannels();
         }
       )
       .on(
@@ -85,7 +99,7 @@ export default function ChannelSidebar({
           table: 'channels'
         },
         (payload) => {
-          fetchChannels();
+          debouncedFetchChannels();
         }
       )
       .subscribe();
@@ -96,8 +110,11 @@ export default function ChannelSidebar({
       if (realtimeChannel) {
         supabase.removeChannel(realtimeChannel);
       }
+      if (debounceTimer) {
+        clearTimeout(debounceTimer);
+      }
     };
-  }, [realtimeChannel]);
+  }, [fetchChannels, realtimeChannel, debounceTimer, debouncedFetchChannels]);
 
   const handleCreateChannel = async (name: string, description: string, privacy: 'public' | 'private' | 'unlisted') => {
     try {
@@ -114,7 +131,7 @@ export default function ChannelSidebar({
       }
       
       const newChannel = await response.json();
-      setChannels([...channels, { ...newChannel, member_count: 1 }]);
+      setChannels([...channels, newChannel]);
       setIsCreateModalOpen(false);
       onChannelSelect(newChannel);
     } catch (err) {

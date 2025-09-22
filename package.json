@@ -5,10 +5,13 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "dev:all": "npm-run-all --parallel dev watch-logs",
+    "dev:monitor": "npm-run-all --parallel dev error-monitor",
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint",
-    "watch-logs": "node scripts/watch-logs.js"
+    "watch-logs": "node scripts/watch-logs.js",
+    "error-monitor": "node scripts/error-monitor.js",
+    "kill-server": "node scripts/kill-server.js"
   },
   "dependencies": {
     "@supabase/ssr": "^0.7.0",

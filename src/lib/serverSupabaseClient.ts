@@ -15,6 +15,14 @@ export const createServerSupabaseClient = () => {
       persistSession: false,
       autoRefreshToken: false,
       detectSessionInUrl: false
+    },
+    db: {
+      schema: 'public'
+    },
+    global: {
+      headers: {
+        'X-Client-Info': 'NeoRealm-Server/0.1.0'
+      }
     }
   });
 };

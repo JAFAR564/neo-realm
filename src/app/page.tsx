@@ -9,10 +9,10 @@ import ChannelSidebar from '@/components/channels/ChannelSidebar';
 import DebugLogViewer from '@/components/DebugLogViewer';
 
 export default function Home() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [profileLoading, setProfileLoading] = useState(true);
   const [currentChannel, setCurrentChannel] = useState(null);
 
   // Check if user has a profile
@@ -20,6 +20,7 @@ export default function Home() {
     if (user) {
       const fetchProfile = async () => {
         try {
+          setProfileLoading(true);
           const { data, error } = await supabase
             .from('profiles')
             .select('*')
@@ -39,15 +40,15 @@ export default function Home() {
         } catch (err) {
           console.error('Error:', err);
         } finally {
-          setLoading(false);
+          setProfileLoading(false);
         }
       };
 
       fetchProfile();
-    } else if (user === null) {
+    } else if (user === null && !authLoading) {
       router.push('/login');
     }
-  }, [user, router]);
+  }, [user, authLoading, router]);
 
   // Load the default "General" channel when profile is loaded
   useEffect(() => {
@@ -75,7 +76,8 @@ export default function Home() {
     }
   }, [profile]);
 
-  if (loading) {
+  // Show loading state while checking auth and profile
+  if (authLoading || profileLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-900">
         <div className="text-white">Loading...</div>

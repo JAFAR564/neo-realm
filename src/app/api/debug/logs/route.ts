@@ -1,7 +1,10 @@
 // src/app/api/debug/logs/route.ts
+// Force recompilation by adding a comment
+// Fixing export syntax and type definitions
 import { NextRequest, NextResponse } from 'next/server';
 import { withLogging } from '@/lib/api/loggingWrapper';
 import { logStorage } from '@/lib/logStorage';
+import { persistentLogStorage } from '@/lib/persistentLogStorage';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('api:debug-logs');
@@ -13,24 +16,44 @@ async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '50');
     const level = searchParams.get('level') || undefined;
     const context = searchParams.get('context') || undefined;
+    const source = searchParams.get('source') || 'memory'; // 'memory' or 'file'
     
     logger.info({ 
       action: 'fetch-logs',
       limit,
       level,
-      context
+      context,
+      source
     }, 'Fetching debug logs');
     
-    const logs = logStorage.getLogs(limit, level || undefined, context || undefined);
+    let logs;
+    if (source === 'file') {
+      // Get logs from persistent storage file
+      const allLogs = persistentLogStorage.getAllLogsFromFile();
+      // Apply filters
+      let filteredLogs = allLogs;
+      if (level) {
+        filteredLogs = filteredLogs.filter(log => log.level === level);
+      }
+      if (context) {
+        filteredLogs = filteredLogs.filter(log => log.context && log.context.includes(context));
+      }
+      logs = filteredLogs.slice(-limit).reverse(); // Get most recent logs
+    } else {
+      // Get logs from memory (default behavior)
+      logs = logStorage.getLogs(limit, level || undefined, context || undefined);
+    }
     
     logger.info({ 
       action: 'logs-fetched',
-      count: logs.length
-    }, `Successfully fetched ${logs.length} logs`);
+      count: logs.length,
+      source
+    }, `Successfully fetched ${logs.length} logs from ${source}`);
     
     return NextResponse.json({
       logs,
       total: logs.length,
+      logFile: persistentLogStorage.getLogFilePath()
     });
   } catch (error: any) {
     logger.error({ 
@@ -57,12 +80,15 @@ async function POST(request: NextRequest) {
     }
     
     // Add the log to our storage
-    logStorage.addLog({
+    const logEntry = {
       timestamp: new Date().toISOString(),
       level: level || 'info',
       message,
       ...context
-    });
+    };
+    
+    logStorage.addLog(logEntry);
+    persistentLogStorage.addLog(logEntry);
     
     logger.info({ 
       action: 'log-added',
@@ -84,8 +110,33 @@ async function POST(request: NextRequest) {
   }
 }
 
+// DELETE /api/debug/logs - Clear all logs
+async function DELETE(request: NextRequest) {
+  try {
+    logger.info({ action: 'clear-logs' }, 'Clearing all logs');
+    
+    logStorage.clearLogs();
+    persistentLogStorage.clearLogs();
+    
+    logger.info({ action: 'logs-cleared' }, 'Successfully cleared all logs');
+    
+    return NextResponse.json({ success: true, message: 'Logs cleared successfully' });
+  } catch (error: any) {
+    logger.error({ 
+      action: 'clear-logs-error',
+      error: error.message
+    }, 'Error clearing logs');
+    
+    return NextResponse.json(
+      { error: 'Failed to clear logs' },
+      { status: 500 }
+    );
+  }
+}
+
 // Export the wrapped handlers
-export { 
-  withLogging(GET, 'debug-logs') as GET,
-  withLogging(POST, 'debug-logs') as POST
-};
+const getHandler = withLogging(GET, 'debug-logs');
+const postHandler = withLogging(POST, 'debug-logs');
+const deleteHandler = withLogging(DELETE, 'debug-logs');
+
+export { getHandler as GET, postHandler as POST, deleteHandler as DELETE };

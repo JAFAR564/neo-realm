@@ -3,13 +3,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createLogger, logHttpRequest, logError } from '@/lib/logger';
 
 // Type for our API route handlers
-type RouteHandler = (request: NextRequest, context: { params: Record<string, string | string[]> }) => Promise<NextResponse>;
+type RouteHandler = (request: NextRequest) => Promise<NextResponse>;
 
 // Create a wrapper function that adds logging to API route handlers
 export function withLogging(handler: RouteHandler, contextName: string) {
   const logger = createLogger(`api:${contextName}`);
   
-  return async function wrappedHandler(request: NextRequest, context: { params: Record<string, string | string[]> }) {
+  return async function wrappedHandler(request: NextRequest) {
     const startTime = Date.now();
     const method = request.method;
     const url = request.url;
@@ -19,12 +19,11 @@ export function withLogging(handler: RouteHandler, contextName: string) {
       type: 'api-request',
       method,
       url,
-      params: context.params,
     }, `API ${method} request to ${url}`);
     
     try {
       // Call the actual handler
-      const response = await handler(request, context);
+      const response = await handler(request);
       
       // Log the successful response
       const responseTime = Date.now() - startTime;
@@ -38,7 +37,6 @@ export function withLogging(handler: RouteHandler, contextName: string) {
         type: 'api-error',
         method,
         url,
-        params: context.params,
       });
       
       // Log the error response

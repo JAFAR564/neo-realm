@@ -107,6 +107,16 @@ This uses `npm-run-all` to run multiple processes in parallel:
 - Next.js development server
 - Log watcher that monitors application logs in real-time
 
+#### Development with Error Monitoring
+
+To run the development server with automatic error monitoring and server termination:
+
+```bash
+npm run dev:monitor
+```
+
+This will automatically kill the server if critical errors are detected.
+
 See [Multi-Process Development Guide](docs/MULTI_PROCESS_DEVELOPMENT.md) for more details.
 
 ### Environment Variables
@@ -132,10 +142,13 @@ The application includes a comprehensive logging system and debugging tools:
 - **Debug Log Viewer**: In development mode, a real-time log viewer is available in the browser
 - **API Route Logging**: All API requests and responses are automatically logged
 - **Error Tracking**: Full stack traces and context information for all errors
+- **Persistent Log Storage**: Logs are stored in memory and persisted to `logs/application.log`
+- **Automatic Error Monitoring**: Server can automatically terminate on critical errors
 
 For detailed information about the logging system and debugging tools, see:
 - [Logging System Documentation](docs/LOGGING_SYSTEM.md)
 - [Debugging Guide](docs/DEBUGGING_GUIDE.md)
+- [Server Management Guide](docs/SERVER_MANAGEMENT.md)
 
 ## Database Schema
 

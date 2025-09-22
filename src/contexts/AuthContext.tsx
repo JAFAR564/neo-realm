@@ -36,21 +36,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setSession(session)
       setUser(session?.user || null)
       
-      // If user just signed up, redirect to profile creation
+      // Only check for profile on sign in, not on every auth state change
       if (_event === 'SIGNED_IN' && session?.user) {
-        // Check if user has a profile
-        supabase
-          .from('profiles')
-          .select('id')
-          .eq('id', session.user.id)
-          .single()
-          .then(({ data, error }) => {
-            if (error || !data) {
-              // No profile found, redirect to profile creation
-              router.push('/profile')
-            }
-            setLoading(false)
-          })
+        // We'll handle profile redirection in the page components to avoid
+        // making unnecessary database queries here
+        setLoading(false)
       } else {
         setLoading(false)
       }
@@ -59,7 +49,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => {
       subscription.unsubscribe()
     }
-  }, [router])
+  }, [])
 
   const signIn = async (email: string, password: string) => {
     return await supabase.auth.signInWithPassword({ email, password })

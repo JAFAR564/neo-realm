@@ -24,11 +24,13 @@ async function GET(request: NextRequest) {
     logger.debug({ test: 'logging-system', userId: session.user.id }, 'Testing debug log from channels API');
     
     // Get public channels and channels the user is a member of
+    // Optimized query that gets member count in a single query
     const { data: channels, error } = await supabase
       .from('channels')
       .select(`
         *,
-        channel_memberships!left(user_id)
+        channel_memberships!left(user_id),
+        member_count:channel_memberships(count)
       `)
       .or(`privacy.eq.public,channel_memberships.user_id.eq.${session.user.id}`)
       .order('created_at', { ascending: false });
@@ -39,32 +41,23 @@ async function GET(request: NextRequest) {
     }
     
     // Remove duplicate channels (public channels that user is also a member of)
-    const uniqueChannels = channels.filter((channel, index, self) => 
-      index === self.findIndex(c => c.id === channel.id)
-    );
-    
-    // Add member count to each channel
-    const channelsWithMemberCount = await Promise.all(
-      uniqueChannels.map(async (channel) => {
-        const { count: memberCount } = await supabase
-          .from('channel_memberships')
-          .select('*', { count: 'exact', head: true })
-          .eq('channel_id', channel.id);
-        
-        return {
-          ...channel,
-          member_count: memberCount || 0
-        };
-      })
-    );
+    // and process the member count
+    const processedChannels = channels
+      .filter((channel, index, self) => 
+        index === self.findIndex(c => c.id === channel.id)
+      )
+      .map(channel => ({
+        ...channel,
+        member_count: channel.member_count?.[0]?.count || 0
+      }));
     
     logger.info({ 
       userId: session.user.id, 
-      channelCount: channelsWithMemberCount.length,
+      channelCount: processedChannels.length,
       type: 'channels-fetched' 
     }, 'Successfully fetched channels for user');
     
-    return NextResponse.json({ channels: channelsWithMemberCount });
+    return NextResponse.json({ channels: processedChannels });
   } catch (error: any) {
     logError(logger, error, { userId: session.user.id, operation: 'fetch-channels' });
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -155,6 +148,12 @@ async function POST(request: NextRequest) {
       // Don't return error here as the channel was created successfully
     }
     
+    // Add member count to the response
+    const channelWithMemberCount = {
+      ...channel,
+      member_count: 1
+    };
+    
     logger.info({ 
       userId: session.user.id, 
       channelId: channel.id,
@@ -162,7 +161,7 @@ async function POST(request: NextRequest) {
       type: 'channel-created' 
     }, 'Successfully created channel');
     
-    return NextResponse.json(channel);
+    return NextResponse.json(channelWithMemberCount);
   } catch (error: any) {
     logError(logger, error, { userId: session.user.id, operation: 'create-channel' });
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
