@@ -8,12 +8,21 @@ import TerminalChat from '@/components/terminal/TerminalChat';
 import ChannelSidebar from '@/components/channels/ChannelSidebar';
 import DebugLogViewer from '@/components/DebugLogViewer';
 
+type Channel = {
+  id: string;
+  name: string;
+  description: string | null;
+  privacy: 'public' | 'private' | 'unlisted';
+  member_count: number;
+  created_at: string;
+};
+
 export default function Home() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const [profile, setProfile] = useState(null);
   const [profileLoading, setProfileLoading] = useState(true);
-  const [currentChannel, setCurrentChannel] = useState(null);
+  const [currentChannel, setCurrentChannel] = useState<Channel | null>(null);
 
   // Check if user has a profile
   useEffect(() => {
