@@ -6,7 +6,7 @@ import { createServerSupabaseClient } from '@/lib/serverSupabaseClient';
 export async function PUT(request: NextRequest, context: { params: Promise<{ id: string, userId: string }> }) {
   const session = await getServerSession();
   
-  if (!session) {
+  if (!session || !session.user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   
@@ -84,7 +84,7 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
 export async function DELETE(_request: NextRequest, context: { params: Promise<{ id: string, userId: string }> }) {
   const session = await getServerSession();
   
-  if (!session) {
+  if (!session || !session.user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   
