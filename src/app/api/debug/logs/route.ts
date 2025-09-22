@@ -10,9 +10,9 @@ import { createLogger } from '@/lib/logger';
 const logger = createLogger('api:debug-logs');
 
 // GET /api/debug/logs - Retrieve recent logs
-async function GET(request: NextRequest) {
+async function GET(_request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
+    const { searchParams } = new URL(_request.url);
     const limit = parseInt(searchParams.get('limit') || '50');
     const level = searchParams.get('level') || undefined;
     const context = searchParams.get('context') || undefined;
@@ -55,10 +55,10 @@ async function GET(request: NextRequest) {
       total: logs.length,
       logFile: persistentLogStorage.getLogFilePath()
     });
-  } catch (error: any) {
+  } catch (error) {
     logger.error({ 
       action: 'fetch-logs-error',
-      error: error.message
+      error: (error as Error).message
     }, 'Error fetching debug logs');
     
     return NextResponse.json(
@@ -97,10 +97,10 @@ async function POST(request: NextRequest) {
     }, 'Log entry added via API');
     
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (error) {
     logger.error({ 
       action: 'add-log-error',
-      error: error.message
+      error: (error as Error).message
     }, 'Error adding log entry');
     
     return NextResponse.json(
@@ -111,7 +111,7 @@ async function POST(request: NextRequest) {
 }
 
 // DELETE /api/debug/logs - Clear all logs
-async function DELETE(request: NextRequest) {
+async function DELETE(_request: NextRequest) {
   try {
     logger.info({ action: 'clear-logs' }, 'Clearing all logs');
     
@@ -121,10 +121,10 @@ async function DELETE(request: NextRequest) {
     logger.info({ action: 'logs-cleared' }, 'Successfully cleared all logs');
     
     return NextResponse.json({ success: true, message: 'Logs cleared successfully' });
-  } catch (error: any) {
+  } catch (error) {
     logger.error({ 
       action: 'clear-logs-error',
-      error: error.message
+      error: (error as Error).message
     }, 'Error clearing logs');
     
     return NextResponse.json(

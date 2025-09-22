@@ -7,7 +7,7 @@ import { createLogger, logError } from '@/lib/logger';
 const logger = createLogger('api:channels');
 
 // GET /api/channels - Retrieve a list of channels the user has access to
-async function GET(request: NextRequest) {
+async function GET(_request: NextRequest) {
   const session = await getServerSession();
   
   if (!session) {
@@ -36,7 +36,7 @@ async function GET(request: NextRequest) {
       .order('created_at', { ascending: false });
     
     if (error) {
-      logError(logger, error, { userId: session.user.id, operation: 'fetch-channels' });
+      logError(logger, error as Error, { userId: session.user.id, operation: 'fetch-channels' });
       return NextResponse.json({ error: 'Failed to fetch channels' }, { status: 500 });
     }
     
@@ -58,8 +58,8 @@ async function GET(request: NextRequest) {
     }, 'Successfully fetched channels for user');
     
     return NextResponse.json({ channels: processedChannels });
-  } catch (error: any) {
-    logError(logger, error, { userId: session.user.id, operation: 'fetch-channels' });
+  } catch (error) {
+    logError(logger, error as Error, { userId: session.user.id, operation: 'fetch-channels' });
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
@@ -128,7 +128,7 @@ async function POST(request: NextRequest) {
       .single();
     
     if (channelError) {
-      logError(logger, channelError, { userId: session.user.id, operation: 'create-channel' });
+      logError(logger, channelError as Error, { userId: session.user.id, operation: 'create-channel' });
       return NextResponse.json({ error: 'Failed to create channel' }, { status: 500 });
     }
     
@@ -144,7 +144,7 @@ async function POST(request: NextRequest) {
       ]);
     
     if (membershipError) {
-      logError(logger, membershipError, { userId: session.user.id, operation: 'add-member' });
+      logError(logger, membershipError as Error, { userId: session.user.id, operation: 'add-member' });
       // Don't return error here as the channel was created successfully
     }
     
@@ -162,8 +162,8 @@ async function POST(request: NextRequest) {
     }, 'Successfully created channel');
     
     return NextResponse.json(channelWithMemberCount);
-  } catch (error: any) {
-    logError(logger, error, { userId: session.user.id, operation: 'create-channel' });
+  } catch (error) {
+    logError(logger, error as Error, { userId: session.user.id, operation: 'create-channel' });
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
