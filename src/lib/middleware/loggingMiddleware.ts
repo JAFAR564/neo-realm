@@ -13,7 +13,7 @@ export async function loggingMiddleware(request: NextRequest, event: NextFetchEv
     method: request.method,
     url: request.url,
     userAgent: request.headers.get('user-agent'),
-    ip: request.ip || request.headers.get('x-forwarded-for'),
+    ip: request.headers.get('x-forwarded-for'),
   }, `Incoming ${request.method} request to ${request.url}`);
 
   // Create a response function to log the outgoing response
