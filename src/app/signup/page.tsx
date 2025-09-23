@@ -22,8 +22,8 @@ export default function SignupPage() {
     }
 
     try {
-      const { error } = await signUp(email, password)
-      if (error) throw error
+      const result = await signUp(email, password)
+      if ('error' in result && result.error) throw result.error
       alert('Check your email for the confirmation link!')
       router.push('/login')
     } catch (error: any) {
