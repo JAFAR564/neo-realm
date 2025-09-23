@@ -20,7 +20,7 @@ type Reaction = {
   id: number;
   user_id: string;
   message_id: number;
-  reaction_type: string;
+  reaction_type: '⚡' | '</>' | '🤖' | '🔥' | '💧' | '🌿';
   created_at: string;
 };
 
