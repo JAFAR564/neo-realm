@@ -2,15 +2,15 @@ import { cookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';
 
 // Create a server-side Supabase client
-export const createServerSupabaseClient = () => {
-  const cookieStore = cookies();
+export const createServerSupabaseClient = async () => {
+  const cookieStore = await cookies();
   
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        async get(name: string) {
+        get(name: string) {
           const cookie = cookieStore.get(name);
           return cookie?.value;
         },
@@ -27,7 +27,7 @@ export const createServerSupabaseClient = () => {
 
 // Get the current user's session
 export const getServerSession = async (): Promise<{ user: { id: string } | null } | null> => {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
   const { data: { session } } = await supabase.auth.getSession();
   return session;
 };
