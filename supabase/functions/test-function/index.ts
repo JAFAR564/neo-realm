@@ -1,5 +1,5 @@
 // Simple test function to check if basic functionality works
-import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.204.0/http/server.ts";
 
 serve(async (_req) => {
   return new Response(
