@@ -28,7 +28,7 @@ const createProxyLogger = (baseLogger: pino.Logger) => {
       if (typeof prop === 'string' && ['trace', 'debug', 'info', 'warn', 'error', 'fatal'].includes(prop)) {
         return (...args: any[]) => {
           // Store the log in our storage
-          const level = prop;
+          const level = prop as 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal';
           const message = args[args.length - 1];
           const context = args.length > 1 ? args[0] : {};
           
@@ -43,7 +43,7 @@ const createProxyLogger = (baseLogger: pino.Logger) => {
           persistentLogStorage.addLog(logEntry);
           
           // Call the original method
-          return target[prop](...args);
+          return (target as any)[prop](...args);
         };
       }
       
