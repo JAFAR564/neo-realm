@@ -11,8 +11,8 @@ type Message = {
   message_type: 'chat' | 'action' | 'dice_roll' | 'system';
   created_at: string;
   username?: string;
-  avatar_url?: string;
-  character_class?: string;
+  avatar_url?: string | null;
+  character_class?: string | null;
   reactions?: Reaction[];
 };
 
