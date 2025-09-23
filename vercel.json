@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next",
+      "config": {
+        "includeFiles": [
+          "src/**/*",
+          "public/**/*",
+          "package.json",
+          "next.config.ts",
+          "tsconfig.json"
+        ],
+        "excludeFiles": [
+          "supabase/functions/**/*"
+        ]
+      }
+    }
+  ]
+}
