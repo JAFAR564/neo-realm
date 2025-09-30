@@ -1,5 +1,4 @@
 // Architect Bot - Simple bot that sends periodic system messages
-import { serve } from "https://deno.land/std@0.204.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 // Initialize Supabase client
@@ -25,7 +24,7 @@ const systemMessages = [
   "// MEMO: Maintenance window scheduled for 02:00-03:00 GMT. Temporary service disruptions may occur."
 ];
 
-serve(async (_req) => {
+export default async (_req: Request) => {
   try {
     console.log('Architect-bot function called');
     
@@ -137,4 +136,4 @@ serve(async (_req) => {
       status: 500,
     });
   }
-});
+};
