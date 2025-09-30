@@ -3,6 +3,10 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "../contexts/AuthContext";
 import Navigation from "../components/Navigation";
+import ThemeSwitcher from "../components/ThemeSwitcher";
+import BootupSequence from "../components/BootupSequence";
+import SoundLoader from "../components/SoundLoader";
+import AmbientSound from "../components/AmbientSound";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,7 +33,11 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-900 min-h-screen`}
       >
+        <BootupSequence />
         <AuthProvider>
+          <SoundLoader />
+          <AmbientSound />
+          <ThemeSwitcher />
           <Navigation />
           <main>{children}</main>
         </AuthProvider>

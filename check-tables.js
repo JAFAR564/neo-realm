@@ -1,7 +1,7 @@
 // check-tables.js
 // Script to check what tables we can access by trying each one directly
 
-const { createClient } = require('@supabase/supabase-js');
+import { createClient } from '@supabase/supabase-js';
 
 // Initialize Supabase client with actual credentials
 const supabaseUrl = 'https://hdcnitfvaeetutqqtjqc.supabase.co';

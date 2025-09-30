@@ -3,7 +3,7 @@
 
 // Script to test invoking Supabase functions against the remote instance
 
-const { createClient } = require('@supabase/supabase-js');
+import { createClient } from '@supabase/supabase-js';
 
 // Initialize Supabase client with actual credentials
 const supabaseUrl = 'https://hdcnitfvaeetutqqtjqc.supabase.co';

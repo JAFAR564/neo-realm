@@ -1,75 +1,91 @@
 // src/lib/logger.ts
-import pino from 'pino';
 import { logStorage } from './logStorage';
 import { persistentLogStorage } from './persistentLogStorage';
 
-// Create a logger instance with a custom transport
-const logger = pino({
-  level: process.env.LOG_LEVEL || 'info',
-  transport: {
-    target: 'pino-pretty',
-    options: {
-      colorize: true,
-      translateTime: 'yyyy-mm-dd HH:MM:ss.l',
-      ignore: 'pid,hostname',
-    },
-  },
-  // Add context to all log messages
-  base: {
-    service: 'neo-realm',
-    version: '1.0.0',
-  },
-});
-
-// Create a proxy logger that also stores logs in our storage
-const createProxyLogger = (baseLogger: pino.Logger) => {
-  return new Proxy(baseLogger, {
-    get(target, prop, receiver) {
-      if (typeof prop === 'string' && ['trace', 'debug', 'info', 'warn', 'error', 'fatal'].includes(prop)) {
-        return (...args: any[]) => {
-          // Store the log in our storage
-          const level = prop as 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal';
-          const message = args[args.length - 1];
-          const context = args.length > 1 ? args[0] : {};
-          
-          const logEntry = {
-            timestamp: new Date().toISOString(),
-            level,
-            message: typeof message === 'string' ? message : JSON.stringify(message),
-            ...context
-          };
-          
-          logStorage.addLog(logEntry);
-          persistentLogStorage.addLog(logEntry);
-          
-          // Call the original method
-          return (target as any)[prop](...args);
-        };
-      }
-      
-      return Reflect.get(target, prop, receiver);
-    }
-  });
-};
-
-// Export the proxy logger
-const proxyLogger = createProxyLogger(logger);
-
-// Create a structured logger with context
-export const createLogger = (context: string) => {
-  const childLogger = proxyLogger.child({ context });
-  return createProxyLogger(childLogger);
-};
-
-// Export the main logger
-export default proxyLogger;
-
-// Log levels for reference
 export type LogLevel = 'fatal' | 'error' | 'warn' | 'info' | 'debug' | 'trace';
+
+export interface Logger {
+  trace: (...args: unknown[]) => void;
+  debug: (...args: unknown[]) => void;
+  info: (...args: unknown[]) => void;
+  warn: (...args: unknown[]) => void;
+  error: (...args: unknown[]) => void;
+  fatal: (...args: unknown[]) => void;
+}
+
+// Create a simple logger that stores logs in our storage without using pino 
+// This completely avoids thread issues
+export const createLogger = (context: string): Logger => {
+  const logger = {
+    trace: (...args: unknown[]) => {
+      logToStorages('trace', args, { context });
+      console.log('[TRACE]', `[${context}]`, ...args);
+    },
+    debug: (...args: unknown[]) => {
+      logToStorages('debug', args, { context });
+      console.log('[DEBUG]', `[${context}]`, ...args);
+    },
+    info: (...args: unknown[]) => {
+      logToStorages('info', args, { context });
+      console.info('[INFO]', `[${context}]`, ...args);
+    },
+    warn: (...args: unknown[]) => {
+      logToStorages('warn', args, { context });
+      console.warn('[WARN]', `[${context}]`, ...args);
+    },
+    error: (...args: unknown[]) => {
+      logToStorages('error', args, { context });
+      console.error('[ERROR]', `[${context}]`, ...args);
+    },
+    fatal: (...args: unknown[]) => {
+      logToStorages('fatal', args, { context });
+      console.error('[FATAL]', `[${context}]`, ...args);
+    },
+  };
+
+  return logger;
+};
+
+// Helper function to store logs to both in-memory and persistent storage
+const logToStorages = (level: string, args: unknown[], bindings?: Record<string, unknown>) => {
+  try {
+    const message = args[args.length - 1];
+    const context = args.length > 1 ? args[0] : {};
+    
+    const logEntry = {
+      timestamp: new Date().toISOString(),
+      level,
+      message: typeof message === 'string' ? message : JSON.stringify(message),
+      ...context as Record<string, unknown>,
+      ...bindings
+    };
+    
+    // Safely add log to storage with error handling
+    try {
+      logStorage.addLog(logEntry);
+    } catch (storageError) {
+      console.error('Error adding log to in-memory storage:', storageError);
+    }
+    
+    try {
+      persistentLogStorage.addLog(logEntry);
+    } catch (persistentStorageError) {
+      console.error('Error adding log to persistent storage:', persistentStorageError);
+    }
+  } catch (logError) {
+    console.error('Error creating log entry:', logError);
+  }
+};
+
+// Create a default logger instance
+const defaultLogger = createLogger('default');
+
+// Export a default logger
+export default defaultLogger;
 
 // Utility function to log HTTP requests
 export const logHttpRequest = (
-  logger: pino.Logger,
+  logger: Logger, // Using any to handle our enhanced logger
   method: string,
   url: string,
   statusCode: number,
@@ -90,7 +106,7 @@ export const logHttpRequest = (
 
 // Utility function to log database operations
 export const logDatabaseOperation = (
-  logger: pino.Logger,
+  logger: Logger, // Using any to handle our enhanced logger
   operation: string,
   table: string,
   recordId?: string | number,
@@ -109,7 +125,7 @@ export const logDatabaseOperation = (
 
 // Utility function to log authentication events
 export const logAuthEvent = (
-  logger: pino.Logger,
+  logger: Logger, // Using any to handle our enhanced logger
   event: string,
   userId?: string,
   email?: string,
@@ -128,9 +144,9 @@ export const logAuthEvent = (
 
 // Utility function to log errors with context
 export const logError = (
-  logger: pino.Logger,
+  logger: Logger, // Using any to handle our enhanced logger
   error: Error,
-  context?: Record<string, any>
+  context?: Record<string, unknown>
 ) => {
   const logEntry = {
     err: {

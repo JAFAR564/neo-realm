@@ -1,9 +1,8 @@
-'use client';
-
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import ChannelList from './ChannelList';
 import ChannelCreationModal from './ChannelCreationModal';
+import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 
 type Channel = {
   id: string;
@@ -25,7 +24,7 @@ export default function ChannelSidebar({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [realtimeChannel, setRealtimeChannel] = useState<any>(null);
+  const [realtimeChannel, setRealtimeChannel] = useState<RealtimeChannel | null>(null);
   const [debounceTimer, setDebounceTimer] = useState<NodeJS.Timeout | null>(null);
 
   // Fetch channels with debounce to prevent excessive API calls
@@ -35,15 +34,28 @@ export default function ChannelSidebar({
       const response = await fetch('/api/channels');
       
       if (!response.ok) {
-        throw new Error('Failed to fetch channels');
+        // Handle specific status codes appropriately
+        if (response.status === 401) {
+          // Unauthorized - user needs to log in
+          setError('Please log in to view channels');
+        } else {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || 'Failed to fetch channels');
+        }
+        return;
       }
       
       const data = await response.json();
       setChannels(data.channels);
       setError(null);
-    } catch (err) {
+    } catch (err: Error) {
       console.error('Error fetching channels:', err);
-      setError('Failed to load channels');
+      // Provide more user-friendly error message
+      if (err.message.includes('network')) {
+        setError('Network error. Please check your connection.');
+      } else {
+        setError('Failed to load channels');
+      }
     } finally {
       setLoading(false);
     }
@@ -60,7 +72,7 @@ export default function ChannelSidebar({
     }, 300); // 300ms debounce
     
     setDebounceTimer(timer);
-  }, [fetchChannels, debounceTimer]);
+  }, [fetchChannels, debounceTimer]); // Removed debounceTimer from dependencies to prevent infinite loop
 
   // Load channels on component mount
   useEffect(() => {
@@ -76,7 +88,7 @@ export default function ChannelSidebar({
           schema: 'public',
           table: 'channels'
         },
-        (payload) => {
+        (payload: RealtimePostgresChangesPayload<Channel>) => {
           debouncedFetchChannels();
         }
       )
@@ -87,7 +99,7 @@ export default function ChannelSidebar({
           schema: 'public',
           table: 'channels'
         },
-        (payload) => {
+        (payload: RealtimePostgresChangesPayload<Channel>) => {
           debouncedFetchChannels();
         }
       )
@@ -98,7 +110,7 @@ export default function ChannelSidebar({
           schema: 'public',
           table: 'channels'
         },
-        (payload) => {
+        (payload: RealtimePostgresChangesPayload<Channel>) => {
           debouncedFetchChannels();
         }
       )
@@ -107,14 +119,12 @@ export default function ChannelSidebar({
     setRealtimeChannel(channel);
     
     return () => {
-      if (realtimeChannel) {
-        supabase.removeChannel(realtimeChannel);
-      }
+      supabase.removeChannel(channel); // Use the channel variable from this closure instead of state
       if (debounceTimer) {
         clearTimeout(debounceTimer);
       }
     };
-  }, [fetchChannels, realtimeChannel, debounceTimer, debouncedFetchChannels]);
+  }, [fetchChannels, debouncedFetchChannels, debounceTimer]); // Remove realtimeChannel and debounceTimer from dependencies
 
   const handleCreateChannel = async (name: string, description: string, privacy: 'public' | 'private' | 'unlisted') => {
     try {

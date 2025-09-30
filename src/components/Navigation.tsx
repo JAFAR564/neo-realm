@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useAuth } from '../contexts/AuthContext';
 import { useState } from 'react';
+import CharacterSwitcher from './CharacterSwitcher';
 
 export default function Navigation() {
   const { user, signOut } = useAuth();
@@ -40,6 +41,13 @@ export default function Navigation() {
               >
                 Characters
               </Link>
+              <Link 
+                href="/groups" 
+                className="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+              >
+                Groups
+              </Link>
+              {user && <CharacterSwitcher />}
               {user ? (
                 <>
                   <Link 
@@ -106,6 +114,7 @@ export default function Navigation() {
             >
               Characters
             </Link>
+            {user && <CharacterSwitcher />}
             {user ? (
               <>
                 <Link 

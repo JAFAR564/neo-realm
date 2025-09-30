@@ -1,7 +1,7 @@
 // test-messages.js
 // Script to test message insertion and understand the schema
 
-const { createClient } = require('@supabase/supabase-js');
+import { createClient } from '@supabase/supabase-js';
 
 // Initialize Supabase client with actual credentials
 const supabaseUrl = 'https://hdcnitfvaeetutqqtjqc.supabase.co';

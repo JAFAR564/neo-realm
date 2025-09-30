@@ -3,9 +3,18 @@
 
 import fs from 'fs';
 import path from 'path';
+import { LogLevel } from './logger';
+
+type LogEntry = {
+  timestamp?: string;
+  level: LogLevel;
+  message: string;
+  context?: string;
+  [key: string]: unknown;
+};
 
 class PersistentLogStorage {
-  private logs: any[] = [];
+  private logs: LogEntry[] = [];
   private maxSize: number = 1000;
   private logFilePath: string;
 
@@ -32,13 +41,14 @@ class PersistentLogStorage {
         // Parse each line as JSON and add to logs array
         this.logs = lines.map(line => {
           try {
-            return JSON.parse(line);
-          } catch (e) {
+            return JSON.parse(line) as LogEntry;
+          } catch (e: unknown) {
             // If parsing fails, create a log entry with the raw line
+            const error = e as Error;
             return {
               timestamp: new Date().toISOString(),
               level: 'error',
-              message: `Failed to parse log line: ${line}`,
+              message: `Failed to parse log line: ${line}. Error: ${error.message}`,
               rawLine: line
             };
           }
@@ -46,23 +56,25 @@ class PersistentLogStorage {
         
         console.log(`Loaded ${this.logs.length} existing log entries from file`);
       }
-    } catch (error) {
-      console.error('Error loading logs from file:', error);
+    } catch (error: unknown) {
+      const err = error as Error;
+      console.error('Error loading logs from file:', err.message);
     }
   }
 
-  private writeLogToFile(logEntry: any) {
+  private writeLogToFile(logEntry: LogEntry) {
     try {
       const logLine = JSON.stringify(logEntry) + '\n';
       fs.appendFileSync(this.logFilePath, logLine, 'utf8');
-    } catch (error) {
-      console.error('Error writing log to file:', error);
+    } catch (error: unknown) {
+      const err = error as Error;
+      console.error('Error writing log to file:', err.message);
     }
   }
 
-  addLog(logEntry: any) {
+  addLog(logEntry: LogEntry) {
     // Add timestamp if not present
-    const logWithTimestamp = {
+    const logWithTimestamp: LogEntry = {
       timestamp: new Date().toISOString(),
       ...logEntry
     };
@@ -99,8 +111,9 @@ class PersistentLogStorage {
     this.logs = [];
     try {
       fs.writeFileSync(this.logFilePath, '', 'utf8');
-    } catch (error) {
-      console.error('Error clearing log file:', error);
+    } catch (error: unknown) {
+      const err = error as Error;
+      console.error('Error clearing log file:', err.message);
     }
   }
 
@@ -113,7 +126,7 @@ class PersistentLogStorage {
   }
 
   // Get logs from file (for cases where we need more than what's in memory)
-  getAllLogsFromFile() {
+  getAllLogsFromFile(): LogEntry[] {
     try {
       if (fs.existsSync(this.logFilePath)) {
         const fileContent = fs.readFileSync(this.logFilePath, 'utf8');
@@ -121,19 +134,21 @@ class PersistentLogStorage {
         
         return lines.map(line => {
           try {
-            return JSON.parse(line);
-          } catch (e) {
+            return JSON.parse(line) as LogEntry;
+          } catch (e: unknown) {
+            const error = e as Error;
             return {
               timestamp: new Date().toISOString(),
               level: 'error',
-              message: `Failed to parse log line: ${line}`,
+              message: `Failed to parse log line: ${line}. Error: ${error.message}`,
               rawLine: line
             };
           }
         }).reverse(); // Return in chronological order (oldest first)
       }
-    } catch (error) {
-      console.error('Error reading logs from file:', error);
+    } catch (error: unknown) {
+      const err = error as Error;
+      console.error('Error reading logs from file:', err.message);
     }
     
     return [];

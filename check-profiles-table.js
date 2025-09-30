@@ -1,7 +1,7 @@
 // check-profiles-table.js
 // Script to check if the profiles table exists
 
-const { createClient } = require('@supabase/supabase-js');
+import { createClient } from '@supabase/supabase-js';
 
 // Initialize Supabase client with actual credentials
 const supabaseUrl = 'https://hdcnitfvaeetutqqtjqc.supabase.co';

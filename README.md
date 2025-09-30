@@ -100,7 +100,7 @@ This starts the Next.js development server on [http://localhost:3000](http://loc
 To run the development server alongside log watching and other services:
 
 ```bash
-npm run dev:all
+npm-run-all
 ```
 
 This uses `npm-run-all` to run multiple processes in parallel:
@@ -160,6 +160,16 @@ The database consists of four main tables:
 4. **Reactions** - Energy reactions to messages
 
 See the full schema in [src/database/schema.sql](src/database/schema.sql)
+
+## Database Migrations
+
+To apply the latest database changes, including the premium features, multiple character support, the group system, and threaded conversations, run the following command:
+
+```bash
+supabase db push
+```
+
+This will apply the migrations located in `src/database/`.
 
 ## Supabase Functions
 

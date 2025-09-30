@@ -1,12 +1,12 @@
 // scripts/error-monitor.js
 // Script to monitor logs for errors and automatically kill the server if critical errors are detected
 
-const https = require('https');
-const http = require('http');
-const { exec } = require('child_process');
-const { promisify } = require('util');
-const fs = require('fs');
-const path = require('path');
+import https from 'https';
+import http from 'http';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+import fs from 'fs';
+import path from 'path';
 
 const execPromise = promisify(exec);
 

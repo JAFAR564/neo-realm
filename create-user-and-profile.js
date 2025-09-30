@@ -1,7 +1,7 @@
 // create-user-and-profile.js
 // Script to create a user and profile in the correct order
 
-const { createClient } = require('@supabase/supabase-js');
+import { createClient } from '@supabase/supabase-js';
 
 // Initialize Supabase client with actual credentials
 const supabaseUrl = 'https://hdcnitfvaeetutqqtjqc.supabase.co';

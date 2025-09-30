@@ -8,7 +8,7 @@ type LogEntry = {
   level: string;
   message: string;
   context?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 };
 
 export default function DebugLogViewer() {
@@ -29,7 +29,7 @@ export default function DebugLogViewer() {
         const data = await response.json();
         setLogs(data.logs);
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error fetching logs:', error);
     } finally {
       setIsLoading(false);
@@ -125,7 +125,7 @@ export default function DebugLogViewer() {
             >
               <div className="flex justify-between">
                 <span className="text-gray-500 text-xs">
-                  {new Date(log.timestamp).toLocaleTimeString()}
+                  {new Date(log.timestamp).toTimeString().substring(0, 8)}
                 </span>
                 <span className={`font-bold text-xs ${
                   log.level === 'error' ? 'text-red-400' : 
@@ -154,7 +154,7 @@ export default function DebugLogViewer() {
       
       <div className="p-2 bg-gray-800 rounded-b-lg text-xs text-gray-500 flex justify-between">
         <span>Showing {filteredLogs.length} of {logs.length} logs</span>
-        <span>{new Date().toLocaleTimeString()}</span>
+        <span>{new Date().toTimeString().substring(0, 8)}</span>
       </div>
     </div>
   );

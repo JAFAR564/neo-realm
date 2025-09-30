@@ -26,7 +26,7 @@ export default function SignupPage() {
       if ('error' in result && result.error) throw result.error
       alert('Check your email for the confirmation link!')
       router.push('/login')
-    } catch (error: any) {
+    } catch (error: Error) {
       setError(error.message)
     }
   }

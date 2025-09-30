@@ -56,7 +56,7 @@ export default function ProfileCreation() {
 
       // Redirect to main page after successful profile creation
       router.push('/');
-    } catch (err: any) {
+    } catch (err: Error) {
       setError(err.message || 'Error creating profile');
     } finally {
       setLoading(false);

@@ -1,8 +1,8 @@
 // scripts/kill-server.js
 // Script to kill the NeoRealm development server and related processes
 
-const { exec } = require('child_process');
-const { promisify } = require('util');
+import { exec } from 'child_process';
+import { promisify } from 'util';
 const execPromise = promisify(exec);
 
 async function killProcesses() {

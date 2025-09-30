@@ -71,7 +71,7 @@ export default function Home() {
           }
           
           const data = await response.json();
-          const generalChannel = data.channels.find((channel: any) => channel.name === 'General');
+          const generalChannel = data.channels.find((channel: Channel) => channel.name === 'General');
           
           if (generalChannel) {
             setCurrentChannel(generalChannel);
@@ -129,7 +129,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center justify-center p-4">
       <div className="text-center max-w-2xl">
-        <h1 className="text-4xl font-bold mb-6 text-cyan-400">NeoRealm</h1>
+        <h1 className="text-4xl font-bold mb-6 text-cyan-400 glitch" data-text="NeoRealm">NeoRealm</h1>
         <p className="text-xl mb-8">
           A gamified cyberpunk roleplay social platform
         </p>

@@ -26,7 +26,7 @@ export default function LoginPage() {
         if ('error' in result && result.error) throw result.error
         router.push('/')
       }
-    } catch (error: any) {
+    } catch (error: Error) {
       setError(error.message)
     }
   }

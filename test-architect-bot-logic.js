@@ -1,7 +1,7 @@
 // test-architect-bot-logic.js
 // Script to test the logic of the architect-bot function locally
 
-const { createClient } = require('@supabase/supabase-js');
+import { createClient } from '@supabase/supabase-js';
 
 // Initialize Supabase client with actual credentials
 const supabaseUrl = 'https://hdcnitfvaeetutqqtjqc.supabase.co';

@@ -1,7 +1,7 @@
 // check-messages-schema.js
 // Script to check the actual schema of the messages table
 
-const { createClient } = require('@supabase/supabase-js');
+import { createClient } from '@supabase/supabase-js';
 
 // Initialize Supabase client with actual credentials
 const supabaseUrl = 'https://hdcnitfvaeetutqqtjqc.supabase.co';

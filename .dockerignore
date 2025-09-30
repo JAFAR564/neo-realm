@@ -1,0 +1,48 @@
+# Dependencies
+node_modules
+
+# Environment variables
+.env*
+!.env.example
+
+# Next.js
+.next
+out
+
+# Logs
+logs
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+.nyc_output/
+
+# Optional npm cache directory
+.npm
+
+# Output of `npm pack`
+*.tgz
+
+# Temporary files
+tmp/
+temp/
+
+# Git
+.git
+
+# IDE
+.vscode
+.idea
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Supabase
+supabase/.temp

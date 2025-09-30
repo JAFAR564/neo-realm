@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  neo-realm:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+    env_file:
+      - .env.local
+    restart: unless-stopped

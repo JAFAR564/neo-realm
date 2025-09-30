@@ -14,8 +14,12 @@ type Profile = {
   created_at: string;
 };
 
+import Image from 'next/image';
+
+// ... (rest of the component)
+
 type ProfileWithFollowers = Profile & {
-  followers?: any[];
+  followers?: Profile[];
 };
 
 export default function ProfilesPage() {
@@ -44,7 +48,7 @@ export default function ProfilesPage() {
 
           if (error) throw error;
           setProfiles(data || []);
-        } catch (err: any) {
+        } catch (err: Error) {
           setError(err.message || 'Error loading profiles');
         } finally {
           setLoading(false);
@@ -100,7 +104,7 @@ export default function ProfilesPage() {
 
       if (fetchError) throw fetchError;
       setProfiles(updatedProfiles || []);
-    } catch (err: any) {
+    } catch (err: Error) {
       setError(err.message || 'Error updating follow status');
     }
   };
@@ -138,9 +142,11 @@ export default function ProfilesPage() {
             <div key={profile.id} className="bg-gray-800 rounded-lg shadow-lg p-6">
               <div className="flex items-center mb-4">
                 {profile.avatar_url ? (
-                  <img 
+                  <Image 
                     src={profile.avatar_url} 
                     alt={profile.username} 
+                    width={64} // Specify appropriate width
+                    height={64} // Specify appropriate height
                     className="w-16 h-16 rounded-full object-cover mr-4"
                   />
                 ) : (

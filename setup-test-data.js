@@ -1,8 +1,8 @@
 // setup-test-data.js
 // Script to create test data for Supabase functions
 
-const { createClient } = require('@supabase/supabase-js');
-const { v4: uuidv4 } = require('uuid');
+import { createClient } from '@supabase/supabase-js';
+import { v4 as uuidv4 } from 'uuid';
 
 // Initialize Supabase client with actual credentials
 const supabaseUrl = 'https://hdcnitfvaeetutqqtjqc.supabase.co';

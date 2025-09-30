@@ -1,7 +1,7 @@
 // debug-functions.js
 // Script to debug Supabase functions by testing them step by step
 
-const { createClient } = require('@supabase/supabase-js');
+import { createClient } from '@supabase/supabase-js';
 
 // Initialize Supabase client with actual credentials
 const supabaseUrl = 'https://hdcnitfvaeetutqqtjqc.supabase.co';

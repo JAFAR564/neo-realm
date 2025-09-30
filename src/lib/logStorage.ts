@@ -2,13 +2,21 @@
 // Simple in-memory log storage for development
 // In production, you would use a proper logging service or database
 
+type LogEntry = {
+  timestamp?: string;
+  level: string;
+  message: string;
+  context?: string;
+  [key: string]: unknown;
+};
+
 class LogStorage {
-  private logs: any[] = [];
+  private logs: LogEntry[] = [];
   private maxSize: number = 1000;
 
-  addLog(logEntry: any) {
+  addLog(logEntry: LogEntry) {
     // Add timestamp if not present
-    const logWithTimestamp = {
+    const logWithTimestamp: LogEntry = {
       timestamp: new Date().toISOString(),
       ...logEntry
     };

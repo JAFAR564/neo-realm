@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 
 type Profile = {
   id: string;
@@ -128,9 +129,11 @@ export default function Dashboard() {
         <div className="bg-gray-800 rounded-lg shadow-lg p-6 mb-6">
           <div className="flex flex-col md:flex-row items-center md:items-start">
             {profile.avatar_url ? (
-              <img 
+              <Image 
                 src={profile.avatar_url} 
                 alt={profile.username} 
+                width={96} // Specify appropriate width
+                height={96} // Specify appropriate height
                 className="w-24 h-24 rounded-full object-cover mr-6 mb-4 md:mb-0"
               />
             ) : (

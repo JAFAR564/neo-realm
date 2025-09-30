@@ -7,19 +7,35 @@ type RouteHandler = (request: NextRequest) => Promise<NextResponse>;
 
 // Create a wrapper function that adds logging to API route handlers
 export function withLogging(handler: RouteHandler, contextName: string) {
-  const logger = createLogger(`api:${contextName}`);
-  
   return async function wrappedHandler(request: NextRequest) {
+    let logger;
+    try {
+      logger = createLogger(`api:${contextName}`);
+    } catch (loggerError) {
+      console.error('Error creating logger:', loggerError);
+      // Fallback logger using console
+      logger = {
+        info: console.info,
+        error: console.error,
+        warn: console.warn,
+        debug: console.debug,
+      };
+    }
+    
     const startTime = Date.now();
     const method = request.method;
     const url = request.url;
     
-    // Log the incoming request
-    logger.info({
-      type: 'api-request',
-      method,
-      url,
-    }, `API ${method} request to ${url}`);
+    try {
+      // Log the incoming request
+      logger.info({
+        type: 'api-request',
+        method,
+        url,
+      }, `API ${method} request to ${url}`);
+    } catch (logError) {
+      console.error('Error logging request:', logError);
+    }
     
     try {
       // Call the actual handler
@@ -27,20 +43,34 @@ export function withLogging(handler: RouteHandler, contextName: string) {
       
       // Log the successful response
       const responseTime = Date.now() - startTime;
-      logHttpRequest(logger, method, url, response.status, responseTime);
+      
+      try {
+        logHttpRequest(logger, method, url, response.status, responseTime);
+      } catch (logError) {
+        console.error('Error logging HTTP request:', logError);
+      }
       
       return response;
-    } catch (error: any) {
+    } catch (error: Error) {
       // Log the error
       const responseTime = Date.now() - startTime;
-      logError(logger, error, {
-        type: 'api-error',
-        method,
-        url,
-      });
       
-      // Log the error response
-      logHttpRequest(logger, method, url, 500, responseTime);
+      try {
+        logError(logger, error, {
+          type: 'api-error',
+          method,
+          url,
+        });
+      } catch (logError) {
+        console.error('Error logging API error:', logError);
+      }
+      
+      try {
+        // Log the error response
+        logHttpRequest(logger, method, url, 500, responseTime);
+      } catch (logError) {
+        console.error('Error logging HTTP error request:', logError);
+      }
       
       // Return a generic error response
       return NextResponse.json(

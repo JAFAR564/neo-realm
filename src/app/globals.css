@@ -1,8 +1,54 @@
 @import "tailwindcss";
+@import "./animations.css";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #0a0a0a;
+  --foreground: #ededed;
+
+  /* Neon Blade Theme */
+  --neon-blade-background: #0d0208;
+  --neon-blade-foreground: #00ff00;
+  --neon-blade-primary: #ff00ff;
+  --neon-blade-accent: #00ffff;
+  --neon-blade-secondary: #ffff00;
+
+  /* Netrunner Theme */
+  --netrunner-background: #0a0a23;
+  --netrunner-foreground: #00f0f0;
+  --netrunner-primary: #7d00b5;
+  --netrunner-accent: #ff3b3b;
+  --netrunner-secondary: #00ff85;
+
+  /* Corpo-Chic Theme */
+  --corpo-chic-background: #f0f2f5;
+  --corpo-chic-foreground: #1a202c;
+  --corpo-chic-primary: #2a4365;
+  --corpo-chic-accent: #718096;
+  --corpo-chic-secondary: #4a5568;
+}
+
+[data-theme='neon-blade'] {
+  --background: var(--neon-blade-background);
+  --foreground: var(--neon-blade-foreground);
+  --primary: var(--neon-blade-primary);
+  --accent: var(--neon-blade-accent);
+  --secondary: var(--neon-blade-secondary);
+}
+
+[data-theme='netrunner'] {
+  --background: var(--netrunner-background);
+  --foreground: var(--netrunner-foreground);
+  --primary: var(--netrunner-primary);
+  --accent: var(--netrunner-accent);
+  --secondary: var(--netrunner-secondary);
+}
+
+[data-theme='corpo-chic'] {
+  --background: var(--corpo-chic-background);
+  --foreground: var(--corpo-chic-foreground);
+  --primary: var(--corpo-chic-primary);
+  --accent: var(--corpo-chic-accent);
+  --secondary: var(--corpo-chic-secondary);
 }
 
 @theme inline {
@@ -12,15 +58,8 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Courier New', Courier, monospace;
 }

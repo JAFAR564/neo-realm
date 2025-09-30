@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers';
-import { createServerClient } from '@supabase/ssr';
+import { createServerClient, CookieOptions } from '@supabase/ssr';
 
 // Create a server-side Supabase client
 export const createServerSupabaseClient = async () => {
@@ -14,10 +14,10 @@ export const createServerSupabaseClient = async () => {
           const cookie = cookieStore.get(name);
           return cookie?.value;
         },
-        set(name: string, value: string, options: any) {
+        set(name: string, value: string, options: CookieOptions) {
           cookieStore.set({ name, value, ...options });
         },
-        remove(name: string, options: any) {
+        remove(name: string, options: CookieOptions) {
           cookieStore.delete({ name, ...options });
         },
       },

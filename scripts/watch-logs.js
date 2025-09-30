@@ -1,8 +1,8 @@
 // scripts/watch-logs.js
 // Script to watch and display logs from the debug API
 
-const https = require('https');
-const http = require('http');
+import https from 'https';
+import http from 'http';
 
 // Configuration
 const PORT = process.env.PORT || 3000;
@@ -41,7 +41,7 @@ function fetchLogs() {
             console.log('\n--- New Logs ---');
             logs.slice(0, logs.length - lastLogCount).reverse().forEach(log => {
               const timestamp = new Date(log.timestamp).toLocaleTimeString();
-              const level = log.level.toUpperCase().padEnd(7);
+              const level = (log.level || 'INFO').toUpperCase().padEnd(7);
               console.log(`[${timestamp}] ${level} ${log.message}`);
               
               // Display additional context if available
